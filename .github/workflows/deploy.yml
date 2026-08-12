@@ -1,0 +1,45 @@
+name: Test and Deploy
+
+# 1. When should this run?
+on:
+  push:
+    branches: ["main"]
+
+# 2. Permissions needed to deploy to Pages
+permissions:
+  pages: write
+  id-token: write
+
+# 3. What are we doing?
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step A: Get the code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Step B: Install Node (needed for our testing tool)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # Step C: THE GATEKEEPER - Test the HTML syntax
+      - name: Check HTML Syntax
+        run: npx htmlhint "**/*.html"
+
+      # Step D: Package the files for deployment
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+          
+      # Step E: Deploy to the live web
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
